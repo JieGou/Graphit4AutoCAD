@@ -5,8 +5,8 @@ The AutoCAD to Graph Data Extraction Tool is a utility designed to convert AutoC
 
  ## Features
 
-    - Node Extraction: Extracts key geometric points (e.g., line endpoints, circle centers) from AutoCAD entities and represents them as nodes.
-    * Edge Creation: Defines relationships and connections between nodes (e.g., lines, circles) and represents them as edges with attributes.
-    * Attribute Handling: Captures additional attributes of entities (e.g., length of lines, radius of circles) and includes them in the graph representation.
-    * Directed Relationships: Supports hierarchical and part-of relationships, allowing for complex graph structures and dependencies.
-    * JSON Output: Outputs the graph representation in JSON format, suitable for loading into Python for further processing with libraries like NetworkX.
+* __Node Extraction:__ Extracts key geometric points (e.g., line endpoints, circle centers) from AutoCAD entities and represents them as nodes.
+* __Edge Creation:__ Defines relationships and connections between nodes (e.g., lines, circles) and represents them as edges with attributes.
+* __Attribute Handling:__ Captures additional attributes of entities (e.g., length of lines, radius of circles) and includes them in the graph representation.
+* __Directed Relationships:__ Supports hierarchical and part-of relationships, allowing for complex graph structures and dependencies.
+* __JSON Output:__ Outputs the graph representation in JSON format, suitable for loading into Python for further processing with libraries like NetworkX.
