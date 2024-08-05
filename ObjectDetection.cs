@@ -19,6 +19,11 @@ namespace Graphit
 {
     public class CadDataExtractor : BaseCommand
     {
+
+        public static string csvPath;
+
+        // Command that extracts training data from the drawing
+
         [CommandMethod("ExtractTrainingData")]
         public void ExtractTrainingData()
         {
@@ -27,6 +32,7 @@ namespace Graphit
                 BlockTable bt = tr.GetObject(db.BlockTableId, OpenMode.ForRead) as BlockTable;
                 BlockTableRecord btr = tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForRead) as BlockTableRecord;
 
+                // Create a list to store the lines data
                 List<string> linesList = new List<string>();
                 linesList.Add("Type,X,Y,Layer,Label");
 
@@ -49,18 +55,28 @@ namespace Graphit
                         linesList.Add(circleData);
                     }
 
-                    // TODO : Add similar code clocks fot other entity types
+                    // TODO : Add similar code blocks for other entity types
 
                 }
-                
+
+
+                // Save the data to a CSV file to the path where the drawing is located
+                string drawingPath = db.Filename;
+                string drawingFolder = Path.GetDirectoryName(drawingPath);
+                csvPath = Path.Combine(drawingFolder, "training_data.csv");
+                File.WriteAllLines(csvPath, linesList);
+                /*
+                // Save the data to a CSV file to the path where the executable is located
                 File.WriteAllLines("training_data.csv", linesList);
+                */
                 tr.Commit();
-
             }
-
         }
+
         private string GetLabel(Entity entity)
         {
+            // Final labelling supposed to be made manually. 
+            // If not so, implement logic here to automatically label the entities.
             return "correct_label";
         }
 
@@ -121,7 +137,7 @@ namespace Graphit
                                 ed.WriteMessage($"Outlier detected: {type} on layer {layer}");
                             }
                         }
-
+                        
                         // TODO : Add similar code blocks for other entity types
                     }
                 }
@@ -133,18 +149,20 @@ namespace Graphit
                 if (predictionEngine == null)
                 {
                     var mlContext = new MLContext();
-                    var modelPath = @"C:\path\to\model.zip";
+
+                    // Load the model from the path where the drawing file is located
+                    var modelPath = csvPath;
                     var model = mlContext.Model.Load(modelPath, out var modelInputSchema);
+
+                    // For Debugging - Logging the schema data
+                    Console.WriteLine("Model Input Schema: ");
+                    foreach (var column in modelInputSchema)
+                    {
+                        Console.WriteLine($"Name: {column.Name}, Type: {column.Type.RawType}");
+                    }
+
                     predictionEngine = mlContext.Model.CreatePredictionEngine<DataPoint, Prediction>(model);
                 }
-            }
-
-            public class DataPoint
-            {
-                public string Type;
-                public float X;
-                public float Y;
-                public string Layer;
             }
 
             public class Prediction
