@@ -45,3 +45,11 @@ E:\98_cs\ACAD\Graphit\Graphit\bin\Debug\System.Numerics.Vectors.xml
 E:\98_cs\ACAD\Graphit\Graphit\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
 E:\98_cs\ACAD\Graphit\Graphit\bin\Debug\System.Threading.Channels.xml
 E:\98_cs\ACAD\Graphit\Graphit\bin\Debug\System.Threading.Tasks.Extensions.xml
+E:\98_cs\ACAD\Graphit\Graphit\bin\Debug\Microsoft.CSharp.dll
+E:\98_cs\ACAD\Graphit\Graphit\bin\Debug\System.Data.DataSetExtensions.dll
+E:\98_cs\ACAD\Graphit\Graphit\bin\Debug\System.Data.dll
+E:\98_cs\ACAD\Graphit\Graphit\bin\Debug\System.dll
+E:\98_cs\ACAD\Graphit\Graphit\bin\Debug\System.Net.Http.dll
+E:\98_cs\ACAD\Graphit\Graphit\bin\Debug\System.Numerics.dll
+E:\98_cs\ACAD\Graphit\Graphit\bin\Debug\System.Xml.dll
+E:\98_cs\ACAD\Graphit\Graphit\bin\Debug\System.Xml.Linq.dll

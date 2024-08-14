@@ -13,7 +13,7 @@ using System.IO;
 
 namespace Graphit
 {
-    // Base class for common declarations
+    /* BaseCommand class for common declarations
     public abstract class BaseCommand
     {
         protected Document doc;
@@ -26,7 +26,7 @@ namespace Graphit
             db = doc.Database;
             ed = doc.Editor;
         }
-    }
+    }*/
 
     public class Graphit : BaseCommand
     {
