@@ -10,32 +10,17 @@ using Newtonsoft.Json;
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Graphit
 {
-    /* BaseCommand class for common declarations
-    public abstract class BaseCommand
-    {
-        protected Document doc;
-        protected Database db;
-        protected Editor ed;
-
-        protected BaseCommand()
-        {
-            doc = Application.DocumentManager.MdiActiveDocument;
-            db = doc.Database;
-            ed = doc.Editor;
-        }
-    }*/
-
     public class Graphit : BaseCommand
     {
         // Extract Autocad objects to graph database
 
-        [CommandMethod("ExtractToGraph")]
+        [CommandMethod("EXTRACTTOGRAPH")]
         public void ExtractToGraph()
         {
-
             // Start a transaction
             using (Transaction tr = db.TransactionManager.StartTransaction())
             {
@@ -43,8 +28,8 @@ namespace Graphit
                 BlockTable bt = tr.GetObject(db.BlockTableId, OpenMode.ForRead) as BlockTable;
                 BlockTableRecord btr = tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForRead) as BlockTableRecord;
 
-                List<Node> nodes = new List<Node>();
-                List<Edge> edges = new List<Edge>();
+                List<Node> nodesList = new List<Node>();
+                List<Edge> edgesList = new List<Edge>();
 
                 // Iterate through all the objects in Model space
                 foreach (ObjectId objId in btr)
@@ -54,99 +39,98 @@ namespace Graphit
                     if (ent is Line line)
                     {
                         string lineId = line.ObjectId.ToString();
-                        Node startNode = new Node(line.StartPoint, "position", lineId, "line");
-                        Node endNode = new Node(line.EndPoint, "position", lineId, "line");
-                        Edge edge = new Edge(startNode, endNode, "Line", lineId, "connection");
-                        nodes.Add(startNode);
-                        nodes.Add(endNode);
-                        edges.Add(edge);
+                        string lineStartId = lineId + "s";
+                        string lineEndId = lineId + "e";
+
+                        // Check if start node already exists
+                        Node startNode = FindOrCreateNode(line.StartPoint, "geometry", lineStartId, "line", nodesList);
+
+                        // Check if end node already exists
+                        Node endNode = FindOrCreateNode(line.EndPoint, "geometry", lineEndId, "line", nodesList);
+
+                        Edge edge = new Edge(startNode, endNode, "geometry", lineId, "connection");
+                        edgesList.Add(edge);
                     }
 
                     if (ent is Circle circle)
                     {
-                        string circleId = circle.ObjectId.ToString();
+                        string circleId = circle.ObjectId.ToString() + "c";
                         double circleRadius = circle.Radius;
-                        Node circleNode = new Node(circle.Center, "position", circleId, "circle", circleRadius);
-                        nodes.Add(circleNode);
+
+                        // Check if circle node already exists
+                        Node circleNode = FindOrCreateNode(circle.Center, "geometry", circleId, "circle", nodesList, circleRadius);
                     }
-
-                    // Define the graph object
-                    Graph graph = new Graph { Edges = edges, Nodes = nodes };
-
-                    // Serialize the graph object to JSON
-                    string json = JsonConvert.SerializeObject(graph, Formatting.Indented);
-
-                    // Acquire the file path of active document
-                    string docPath = doc.Name;
-                    string docDir = Path.GetDirectoryName(docPath);
-
-                    // Define the output file path
-                    string outputPath = Path.Combine(docDir, "graph.json");
-
-                    // Write the JSON to the output file
-                    File.WriteAllText(outputPath, json);
                 }
-                
+
+                // Find overlap edges
+                FindOverlaps(nodesList, edgesList);
+
+                // Define the graph object
+                Graph graph = new Graph { Edges = edgesList, Nodes = nodesList };
+
+                // Serialize the graph object to JSON
+                string json = JsonConvert.SerializeObject(graph, Formatting.Indented);
+
+                // Acquire the file path of active document
+                string docPath = doc.Name;
+                string docDir = Path.GetDirectoryName(docPath);
+
+                // Define the output file path
+                string outputPath = Path.Combine(docDir, "graph.json");
+
+                // Write the JSON to the output file
+                File.WriteAllText(outputPath, json);
+
+                // Commit the transaction
+                tr.Commit();
             }
         }
-    }
 
-    public class Node
-    {
-        public double X { get; set; }
-        public double Y { get; set; }
-        public double Z { get; set; }
-        public string type { get; set; }
-        public string id { get; set; }
-        public string label { get; set; }
-        public string color { get; set; }
-        public string shape { get; set; }
-        public double size { get; set; }
-
-        public Node(Point3d pt, string type, string id, string label)
+        // Helper method - Find an existing node or create a new one
+        private Node FindOrCreateNode(Point3d pt, string type, string id, string label, List<Node> nodesList, double size = 0)
         {
-            X = pt.X;
-            Y = pt.Y;
-            Z = pt.Z;
-            this.type = type;
-            this.id = id;
-            this.label = label;
+            // Find an existing node at the same pt and having the same label
+            Node existingNode = nodesList.FirstOrDefault(n => n.X == pt.X && n.Y == pt.Y && n.Z == pt.Z && n.label == label);
+
+            if (existingNode != null)
+            {
+                return existingNode;
+            }
+
+            // If no existing node found, create a new node
+            Node newNode;
+
+            if (size > 0)
+            {
+                newNode = new Node(pt, type, id, label, size);
+            }
+            else
+            {
+                newNode = new Node(pt, type, id, label);
+            }
+            nodesList.Add(newNode);
+            return newNode;
         }
 
-        // Node overload 01 - Circle
-        public Node(Point3d pt, string type, string id, string label, double size)
+        // Helper method - Find overlapping nodes in nodesList and establish a "overlap" edge between each of them
+        private void FindOverlaps(List<Node> nodesList, List<Edge> edgesList)
         {
-            X = pt.X;
-            Y = pt.Y;
-            Z = pt.Z;
-            this.type = type;
-            this.id = id;
-            this.label = label;
-            this.size = size;
+            // Iterate through all nodes in the list
+            for (int i = 0; i < nodesList.Count; i++)
+            {
+                // Compare each node with all other nodes
+                for (int j = i + 1; j < nodesList.Count; j++)
+                {
+                    if (nodesList[i].X == nodesList[j].X && nodesList[i].Y == nodesList[j].Y && nodesList[i].Z == nodesList[j].Z)
+                    {
+                        string overlapId = nodesList[i].id + nodesList[j].id;
+                        Edge overlapEdge = new Edge(nodesList[i], nodesList[j], "geometry", overlapId, "overlap");
+                        edgesList.Add(overlapEdge);
+                    }
+                }
+            }
         }
+
     }
 
-    public class Edge
-    {
-        public Node start { get; set; }
-        public Node end { get; set; }
-        public string id { get; set; }
-        public string label { get; set; }
-        public string type { get; set; }
-
-        public Edge (Node start, Node end, string type, string id, string label)
-        {
-            this.start = start;
-            this.end = end;
-            this.type = type;
-            this.id = id;
-            this.label = label;
-        }
-    }
-
-    public class Graph
-    {
-        public List<Node> Nodes { get; set; }
-        public List<Edge> Edges { get; set; }
-    }
 }

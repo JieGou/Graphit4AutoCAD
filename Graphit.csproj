@@ -78,6 +78,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseCommand.cs" />
     <Compile Include="Graphit.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
