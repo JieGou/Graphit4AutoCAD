@@ -1,0 +1,131 @@
+{
+  "Nodes": [
+    {
+      "X": 1981.5104236333282,
+      "Y": -351.80013556426275,
+      "Z": 0.0,
+      "type": "geometry",
+      "id": "(2035504321984)s",
+      "label": "line",
+      "color": null,
+      "shape": null,
+      "size": 0.0
+    },
+    {
+      "X": 2941.8384508322924,
+      "Y": -2477.7669656087855,
+      "Z": 0.0,
+      "type": "geometry",
+      "id": "(2035504321984)e",
+      "label": "line",
+      "color": null,
+      "shape": null,
+      "size": 0.0
+    },
+    {
+      "X": 4886.8067101334163,
+      "Y": -1032.1095299865083,
+      "Z": 0.0,
+      "type": "geometry",
+      "id": "(2035504322000)e",
+      "label": "line",
+      "color": null,
+      "shape": null,
+      "size": 0.0
+    },
+    {
+      "X": 4886.8067101334163,
+      "Y": -1032.1095299865083,
+      "Z": 0.0,
+      "type": "geometry",
+      "id": "(2035504322016)c",
+      "label": "circle",
+      "color": null,
+      "shape": null,
+      "size": 599.38250411771719
+    }
+  ],
+  "Edges": [
+    {
+      "start": {
+        "X": 1981.5104236333282,
+        "Y": -351.80013556426275,
+        "Z": 0.0,
+        "type": "geometry",
+        "id": "(2035504321984)s",
+        "label": "line",
+        "color": null,
+        "shape": null,
+        "size": 0.0
+      },
+      "end": {
+        "X": 2941.8384508322924,
+        "Y": -2477.7669656087855,
+        "Z": 0.0,
+        "type": "geometry",
+        "id": "(2035504321984)e",
+        "label": "line",
+        "color": null,
+        "shape": null,
+        "size": 0.0
+      },
+      "id": "(2035504321984)",
+      "label": "connection",
+      "type": "geometry"
+    },
+    {
+      "start": {
+        "X": 2941.8384508322924,
+        "Y": -2477.7669656087855,
+        "Z": 0.0,
+        "type": "geometry",
+        "id": "(2035504321984)e",
+        "label": "line",
+        "color": null,
+        "shape": null,
+        "size": 0.0
+      },
+      "end": {
+        "X": 4886.8067101334163,
+        "Y": -1032.1095299865083,
+        "Z": 0.0,
+        "type": "geometry",
+        "id": "(2035504322000)e",
+        "label": "line",
+        "color": null,
+        "shape": null,
+        "size": 0.0
+      },
+      "id": "(2035504322000)",
+      "label": "connection",
+      "type": "geometry"
+    },
+    {
+      "start": {
+        "X": 4886.8067101334163,
+        "Y": -1032.1095299865083,
+        "Z": 0.0,
+        "type": "geometry",
+        "id": "(2035504322000)e",
+        "label": "line",
+        "color": null,
+        "shape": null,
+        "size": 0.0
+      },
+      "end": {
+        "X": 4886.8067101334163,
+        "Y": -1032.1095299865083,
+        "Z": 0.0,
+        "type": "geometry",
+        "id": "(2035504322016)c",
+        "label": "circle",
+        "color": null,
+        "shape": null,
+        "size": 599.38250411771719
+      },
+      "id": "(2035504322000)e(2035504322016)c",
+      "label": "overlap",
+      "type": "geometry"
+    }
+  ]
+}
