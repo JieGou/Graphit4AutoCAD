@@ -36,6 +36,12 @@ namespace Graphit
         public string shape { get; set; }
         public double size { get; set; }
 
+        // Derived metrics
+        public double degree { get; set; }
+        public double centralityEigenvector { get; set; }
+        public double centralityBetweenness { get; set; }
+
+
         public Node(Point3d pt, string type, string id, string label)
         {
             X = pt.X;

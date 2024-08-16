@@ -12,6 +12,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
+using static Graphit.Calculations;
+using System.Diagnostics;
+
 namespace Graphit
 {
     public class Graphit : BaseCommand
@@ -24,65 +27,92 @@ namespace Graphit
             // Start a transaction
             using (Transaction tr = db.TransactionManager.StartTransaction())
             {
-                // Open the Block table & Block table record for read
-                BlockTable bt = tr.GetObject(db.BlockTableId, OpenMode.ForRead) as BlockTable;
-                BlockTableRecord btr = tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForRead) as BlockTableRecord;
-
-                List<Node> nodesList = new List<Node>();
-                List<Edge> edgesList = new List<Edge>();
-
-                // Iterate through all the objects in Model space
-                foreach (ObjectId objId in btr)
+                try
                 {
-                    Entity ent = tr.GetObject(objId, OpenMode.ForRead) as Entity;
+                    // Open the Block table & Block table record for read
+                    BlockTable bt = tr.GetObject(db.BlockTableId, OpenMode.ForRead) as BlockTable;
+                    BlockTableRecord btr = tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForRead) as BlockTableRecord;
 
-                    if (ent is Line line)
+                    List<Node> nodesList = new List<Node>();
+                    List<Edge> edgesList = new List<Edge>();
+
+                    // debugging
+                    ed.WriteMessage("\n1-Nodes & Edges counting...");
+
+                    // Iterate through all the objects in Model space
+                    foreach (ObjectId objId in btr)
                     {
-                        string lineId = line.ObjectId.ToString();
-                        string lineStartId = lineId + "s";
-                        string lineEndId = lineId + "e";
+                        Entity ent = tr.GetObject(objId, OpenMode.ForRead) as Entity;
 
-                        // Check if start node already exists
-                        Node startNode = FindOrCreateNode(line.StartPoint, "geometry", lineStartId, "line", nodesList);
+                        if (ent is Line line)
+                        {
+                            string lineId = line.ObjectId.ToString();
+                            string lineStartId = lineId + "s";
+                            string lineEndId = lineId + "e";
 
-                        // Check if end node already exists
-                        Node endNode = FindOrCreateNode(line.EndPoint, "geometry", lineEndId, "line", nodesList);
+                            // Check if start node already exists
+                            Node startNode = FindOrCreateNode(line.StartPoint, "geometry", lineStartId, "line", nodesList);
 
-                        Edge edge = new Edge(startNode, endNode, "geometry", lineId, "connection");
-                        edgesList.Add(edge);
+                            // Check if end node already exists
+                            Node endNode = FindOrCreateNode(line.EndPoint, "geometry", lineEndId, "line", nodesList);
+
+                            Edge edge = new Edge(startNode, endNode, "geometry", lineId, "connection");
+                            edgesList.Add(edge);
+                        }
+
+                        if (ent is Circle circle)
+                        {
+                            string circleId = circle.ObjectId.ToString() + "c";
+                            double circleRadius = circle.Radius;
+
+                            // Check if circle node already exists
+                            Node circleNode = FindOrCreateNode(circle.Center, "geometry", circleId, "circle", nodesList, circleRadius);
+
+                        }
                     }
 
-                    if (ent is Circle circle)
-                    {
-                        string circleId = circle.ObjectId.ToString() + "c";
-                        double circleRadius = circle.Radius;
+                    // debugging
+                    ed.WriteMessage("\n2-Overlaps counting...");
+                    // Find overlap edges
+                    FindOverlaps(nodesList, edgesList);
 
-                        // Check if circle node already exists
-                        Node circleNode = FindOrCreateNode(circle.Center, "geometry", circleId, "circle", nodesList, circleRadius);
-                    }
+
+                    // debugging
+                    ed.WriteMessage("\n3-Node level calculations...");
+                    // Calculate node level statistics
+                    NodeLevelCalculations.CalculateNodeDegree(nodesList, edgesList);
+                    NodeLevelCalculations.CalculateNodeEigenvectorCentrality(nodesList, edgesList);
+                    NodeLevelCalculations.CalculateBetweennessCentrality(nodesList, edgesList);
+
+                    // debugging
+                    ed.WriteMessage("\n4-Graph creation...");
+                    // Define the graph object
+                    Graph graph = new Graph { Edges = edgesList, Nodes = nodesList };
+
+                    // debugging
+                    ed.WriteMessage("\n5-Serializing graph object...");
+                    // Serialize the graph object to JSON
+                    string json = JsonConvert.SerializeObject(graph, Formatting.Indented);
+
+                    // Acquire the file path of active document
+                    string docPath = doc.Name;
+                    string docDir = Path.GetDirectoryName(docPath);
+
+                    // Define the output file path
+                    string outputPath = Path.Combine(docDir, $"{doc.Name}_graph.json");
+
+                    // debugging
+                    ed.WriteMessage("\n6-Writing JSON to file...");
+                    // Write the JSON to the output file
+                    File.WriteAllText(outputPath, json);
+
+                    // Commit the transaction
+                    tr.Commit();
                 }
-
-                // Find overlap edges
-                FindOverlaps(nodesList, edgesList);
-
-                // Define the graph object
-                Graph graph = new Graph { Edges = edgesList, Nodes = nodesList };
-
-                // Serialize the graph object to JSON
-                string json = JsonConvert.SerializeObject(graph, Formatting.Indented);
-
-                // Acquire the file path of active document
-                string docPath = doc.Name;
-                string docDir = Path.GetDirectoryName(docPath);
-
-                // Define the output file path
-                string outputPath = Path.Combine(docDir, "graph.json");
-
-                // Write the JSON to the output file
-                File.WriteAllText(outputPath, json);
-
-                // Commit the transaction
-                tr.Commit();
+                catch (System.Exception ex)
+                {
+                    ed.WriteMessage($"\nError: {ex.Message}");
+                }
             }
         }
 
