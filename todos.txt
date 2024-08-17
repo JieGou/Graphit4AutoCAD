@@ -1,0 +1,4 @@
+﻿- implement metrics for nodes, edges, graphs
+	- degree kernel to binary
+
+- graph visualization within Autocad

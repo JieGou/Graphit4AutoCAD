@@ -83,11 +83,18 @@ namespace Graphit
                     NodeLevelCalculations.CalculateNodeDegree(nodesList, edgesList);
                     NodeLevelCalculations.CalculateNodeEigenvectorCentrality(nodesList, edgesList);
                     NodeLevelCalculations.CalculateBetweennessCentrality(nodesList, edgesList);
+                    NodeLevelCalculations.CalculateClosenessCentrality(nodesList, edgesList);
+                    NodeLevelCalculations.CalculateClusteringCoefficient(nodesList, edgesList);
+
 
                     // debugging
                     ed.WriteMessage("\n4-Graph creation...");
                     // Define the graph object
                     Graph graph = new Graph { Edges = edgesList, Nodes = nodesList };
+
+                    // Calculate graph level statistics
+                    GraphLevelCalculations.CalculateGraphDensity(nodesList, edgesList, graph);
+                    GraphLevelCalculations.CalculateGraphKernelDegree(nodesList, edgesList, graph);
 
                     // debugging
                     ed.WriteMessage("\n5-Serializing graph object...");

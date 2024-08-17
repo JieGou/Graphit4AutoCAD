@@ -37,9 +37,11 @@ namespace Graphit
         public double size { get; set; }
 
         // Derived metrics
-        public double degree { get; set; }
+        public int degree { get; set; }
         public double centralityEigenvector { get; set; }
         public double centralityBetweenness { get; set; }
+        public double centralityCloseness { get; set; }
+        public double clusteringCoefficient { get; set; }
 
 
         public Node(Point3d pt, string type, string id, string label)
@@ -87,6 +89,10 @@ namespace Graphit
     {
         public List<Node> Nodes { get; set; }
         public List<Edge> Edges { get; set; }
+
+        // Derived metrics
+        public double density { get; set; }
+        public Dictionary<int, int> kernelDegree { get; set; }
     }
 
 }
