@@ -269,6 +269,25 @@ namespace Graphit
 
         public class GraphLevelCalculations
         {
+            public static void CalculateAverageDegree(List<Node> nodesList, List<Edge> edgesList, Graph graph)
+            {
+                // Number of nodes in graph
+                int nodeCount = nodesList.Count;
+
+                // Number of edges
+                int edgeCount = edgesList.Count;
+
+                // Calculate the average degree
+                double averageDegree = 0.0;
+
+                if (nodeCount > 0)
+                {
+                    averageDegree = (2.0 * edgeCount) / nodeCount;
+                }
+
+                // Assign the average degree to the graph
+                graph.averageDegree = averageDegree;
+            }
             public static void CalculateGraphDensity (List<Node> nodesList, List<Edge> edgesList, Graph graph)
             {
                 int n = nodesList.Count;

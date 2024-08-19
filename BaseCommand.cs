@@ -91,6 +91,7 @@ namespace Graphit
         public List<Edge> Edges { get; set; }
 
         // Derived metrics
+        public double averageDegree { get; set; }
         public double density { get; set; }
         public Dictionary<int, int> kernelDegree { get; set; }
     }
