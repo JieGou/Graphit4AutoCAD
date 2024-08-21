@@ -299,6 +299,80 @@ namespace Graphit
                 // Assign the density to the graph
                 graph.density = density;
             }
+
+            public static void CalculateGraphDiameter (List<Node> nodesList, List<Edge> edgesList, Graph graph)
+            {
+                // Initialize the diameter
+                int diameter = 0;
+
+                // For each node, perform BFS to find the longest shortest path from that node
+                foreach (var sourceNode in nodesList)
+                {
+                    // Use BFS to find the shortest paths from the source node
+                    Dictionary<Node, int> shortestPaths = BFSShortestPaths(sourceNode, nodesList, edgesList);
+
+                    // Find the maximum distance from sourceNode to any other node
+                    int maxDistance = shortestPaths.Values.Max();
+
+                    // Update the diameter if the current maxDistance is larger
+                    if (maxDistance > diameter)
+                    {
+                        diameter = maxDistance;
+                    }
+                }
+
+                // Assign the diameter to the graph
+                graph.diameter = diameter;
+            }
+
+            private static Dictionary<Node, int> BFSShortestPaths(Node startNode, List<Node> nodesList, List<Edge> edgesList)
+            {
+                // Initialize the distance dictionary
+                Dictionary<Node, int> distanceDict = nodesList.ToDictionary(n => n, n => int.MaxValue);
+
+                // Initialize the queue for BFS
+                Queue<Node> queue = new Queue<Node>();
+
+                // Start node has distance 0
+                distanceDict[startNode] = 0;
+                queue.Enqueue(startNode);
+
+                // Perform BFS
+                while (queue.Count > 0)
+                {
+                    Node currnetNode = queue.Dequeue();
+
+                    // Explore neighbors
+                    foreach (var edge in edgesList)
+                    {
+                        Node neighbor = null;
+
+                        if (edge.start == currnetNode)
+                        {
+                            neighbor = edge.end;
+                        }
+                        else if (edge.end == currnetNode)
+                        {
+                            neighbor = edge.start;
+                        }
+
+                        if (neighbor == null)
+                        {
+                            continue;
+                        }
+
+                        // If the distance to the neighbor can be minimized, update it
+                        if (distanceDict[neighbor] > distanceDict[currnetNode] + 1)
+                        {
+                            distanceDict[neighbor] = distanceDict[currnetNode] + 1; // --- 1 is the length of the edge
+                            queue.Enqueue(neighbor);
+                        }
+                    }
+                }
+
+                return distanceDict;
+            }
+
             public static void CalculateGraphKernelDegree (List<Node> nodesList, List<Edge> edgesList, Graph graph)
             {
                 // Initialize the kernel dictionary to store the degree of each node

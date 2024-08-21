@@ -95,6 +95,7 @@ namespace Graphit
                     // Calculate graph level statistics
                     GraphLevelCalculations.CalculateAverageDegree(nodesList, edgesList, graph);
                     GraphLevelCalculations.CalculateGraphDensity(nodesList, edgesList, graph);
+                    GraphLevelCalculations.CalculateGraphDiameter(nodesList, edgesList, graph);
                     GraphLevelCalculations.CalculateGraphKernelDegree(nodesList, edgesList, graph);
 
                     // debugging

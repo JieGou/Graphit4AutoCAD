@@ -93,6 +93,7 @@ namespace Graphit
         // Derived metrics
         public double averageDegree { get; set; }
         public double density { get; set; }
+        public double diameter { get; set; }
         public Dictionary<int, int> kernelDegree { get; set; }
     }
 
