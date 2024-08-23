@@ -3,6 +3,7 @@ using System;
 using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -19,6 +20,7 @@ namespace Graphit
                     node.degree = edgesList.Count(e => e.start == node || e.end == node);
                 }
             }
+            
             public static void CalculateNodeEigenvectorCentrality(List<Node> nodesList, List<Edge> edgesList)
             {
                 // Initialize centrality score dictionary
@@ -80,6 +82,7 @@ namespace Graphit
                     node.centralityEigenvector = centralitiesDict[node] * 100;
                 }
             }
+            
             public static void CalculateBetweennessCentrality (List<Node> nodesList, List<Edge> edgesList)
             {
                 // Initialize betweenness centralitiesDict
@@ -164,6 +167,7 @@ namespace Graphit
                     node.centralityBetweenness = centralitiesDict[node];
                 }
             }
+            
             public static void CalculateClosenessCentrality (List<Node> nodesList, List<Edge> edgesList)
             {
                 foreach (var nod in nodesList)
@@ -222,6 +226,7 @@ namespace Graphit
                     }
                 }
             }
+            
             public static void CalculateClusteringCoefficient (List<Node> nodesList, List<Edge> edgesList)
             {
                 // Dictionary to store neighbors for each node
@@ -277,7 +282,7 @@ namespace Graphit
                 // Number of edges
                 int edgeCount = edgesList.Count;
 
-                // Calculate the average degree
+                // Calculate the average key
                 double averageDegree = 0.0;
 
                 if (nodeCount > 0)
@@ -285,9 +290,11 @@ namespace Graphit
                     averageDegree = (2.0 * edgeCount) / nodeCount;
                 }
 
-                // Assign the average degree to the graph
+                // Assign the average key to the graph
                 graph.averageDegree = averageDegree;
             }
+
+            
             public static void CalculateGraphDensity (List<Node> nodesList, List<Edge> edgesList, Graph graph)
             {
                 int n = nodesList.Count;
@@ -299,6 +306,8 @@ namespace Graphit
                 // Assign the density to the graph
                 graph.density = density;
             }
+
+            //////////////////////////////////////////////////////////////////////////////////////////
 
             public static void CalculateGraphDiameter (List<Node> nodesList, List<Edge> edgesList, Graph graph)
             {
@@ -325,6 +334,7 @@ namespace Graphit
                 graph.diameter = diameter;
             }
 
+            // Helper method → Calculate Graph Diameter
             private static Dictionary<Node, int> BFSShortestPaths(Node startNode, List<Node> nodesList, List<Edge> edgesList)
             {
                 // Initialize the distance dictionary
@@ -373,18 +383,20 @@ namespace Graphit
                 return distanceDict;
             }
 
-            public static void CalculateGraphKernelDegree (List<Node> nodesList, List<Edge> edgesList, Graph graph)
+            //////////////////////////////////////////////////////////////////////////////////////////
+            
+            public static void CalculateGraphKernelDegree (List<Node> nodesList, Graph graph)
             {
-                // Initialize the kernel dictionary to store the degree of each node
+                // Initialize the kernel dictionary to store the key of each node
                 Dictionary<int, int> kernelDegreeDict = new Dictionary<int, int>();
 
-                // Initialize node degree dictionary
+                // Initialize node key dictionary
                 Dictionary<Node, int> degreeDict = nodesList.ToDictionary(n => n, n => 0);
 
-                // Step.1 Get the degree of each node from nodesList objects value node.degree
+                // Step.1 : Get the key of each node from nodesList objects value node.key
                 foreach (var node in nodesList)
                 {
-                    degreeDict[node] = node.degree;
+                    degreeDict[node] = node.degree; 
                 }
 
                 foreach (var degree in degreeDict.Values)
@@ -399,10 +411,33 @@ namespace Graphit
                     }
                 }
 
-                // Step.2 Assign the kernel degree dictionary to the graph
+                // Step.2 : Assign the kernel key dictionary to the graph
                 graph.kernelDegree = kernelDegreeDict;
             }
-        
+
+            public static void CalculateKernelDegreeDistribution(List<Node> nodesList, Graph graph)
+            {
+                // Step 1: Get the key kernel information from the parameter of key kernel of the graph
+                Dictionary<int, int> kernelDegreeDict = graph.kernelDegree;
+
+                // Step 2: Convert "kernelDegreeDict" to a <int, double> dictionary
+                Dictionary<int, double> degreeDistributionDict = kernelDegreeDict.ToDictionary(kv => kv.Key, kv => (double)kv.Value);
+
+                int totalNodes = nodesList.Count;
+
+                // Step 4 : Normalize the values of "degreeDistributionDict" with "totalNodes"
+                foreach (var key in degreeDistributionDict.Keys.ToList())
+                {
+                    degreeDistributionDict[key] /= totalNodes;
+                }
+
+                // Step 3: Assign the key distribution dictionary to the graph
+                graph.kernelDegreeDistribution = degreeDistributionDict;
+            }
+
+
+
+
         }
     }
 }

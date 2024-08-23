@@ -96,7 +96,8 @@ namespace Graphit
                     GraphLevelCalculations.CalculateAverageDegree(nodesList, edgesList, graph);
                     GraphLevelCalculations.CalculateGraphDensity(nodesList, edgesList, graph);
                     GraphLevelCalculations.CalculateGraphDiameter(nodesList, edgesList, graph);
-                    GraphLevelCalculations.CalculateGraphKernelDegree(nodesList, edgesList, graph);
+                    GraphLevelCalculations.CalculateGraphKernelDegree(nodesList, graph);
+                    GraphLevelCalculations.CalculateKernelDegreeDistribution(nodesList, graph);
 
                     // debugging
                     ed.WriteMessage("\n5-Serializing graph object...");

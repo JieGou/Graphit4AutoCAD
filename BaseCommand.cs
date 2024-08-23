@@ -95,6 +95,7 @@ namespace Graphit
         public double density { get; set; }
         public double diameter { get; set; }
         public Dictionary<int, int> kernelDegree { get; set; }
+        public Dictionary<int, double> kernelDegreeDistribution { get; set; }
     }
 
 }
