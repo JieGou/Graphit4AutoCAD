@@ -293,8 +293,7 @@ namespace Graphit
                 // Assign the average key to the graph
                 graph.averageDegree = averageDegree;
             }
-
-            
+           
             public static void CalculateGraphDensity (List<Node> nodesList, List<Edge> edgesList, Graph graph)
             {
                 int n = nodesList.Count;
@@ -425,18 +424,139 @@ namespace Graphit
 
                 int totalNodes = nodesList.Count;
 
-                // Step 4 : Normalize the values of "degreeDistributionDict" with "totalNodes"
+                // Step 3 : Normalize the values of "degreeDistributionDict" with "totalNodes"
                 foreach (var key in degreeDistributionDict.Keys.ToList())
                 {
                     degreeDistributionDict[key] /= totalNodes;
                 }
 
-                // Step 3: Assign the key distribution dictionary to the graph
+                // Step 4: Assign the key distribution dictionary to the graph
                 graph.kernelDegreeDistribution = degreeDistributionDict;
             }
 
+            //////////////////////////////////////////////////////////////////////////////////////////
 
+            public static void CalculateConnectedComponents(List<Node> nodesList, List<Edge> edgesList, Graph graph) 
+            {
+                // Step 1: Initialize the dictionary to keep track of visited nodes and
+                // the counter for connected components
+                HashSet<Node> visited = new HashSet<Node>();
+                int connectedComponents = 0;
 
+                // Step 2: Iterate over all nodes in the graph
+                foreach (var node in nodesList)
+                {
+                    if(!visited.Contains(node))
+                    {
+                        connectedComponents++;
+                        // Perform DFS from the current node
+                        DFS(node, visited, edgesList);
+                    }
+                }
+
+                // Step 3: Assign the number of connected components to the graph
+                graph.connectedComponents = connectedComponents;
+
+            }
+
+            // Helper method → Calculate Connected Components
+            private static void DFS(Node node, HashSet<Node> visited, List<Edge> edgesList)
+            {
+                // Mark the node as visited
+                visited.Add(node);
+
+                // Explore all neighbors (connected nodes)
+                foreach (var edge in edgesList)
+                {
+                    // Check both ends of the edge to find neighbors
+                    Node neighbor = null;
+
+                    if (edge.start == node)
+                    {
+                        neighbor = edge.end;
+                    }
+                    else if (edge.end == node)
+                    {
+                        neighbor = edge.start;
+                    }
+
+                    if (neighbor == null)
+                    {
+                        continue;
+                    }
+
+                    if (!visited.Contains(neighbor) && neighbor != null)
+                    {
+                        // Recursive visit to neighbor
+                        DFS(neighbor, visited, edgesList);
+                    }
+                }
+            }
+
+            //////////////////////////////////////////////////////////////////////////////////////////
+        
+            public static void CalculateAveragePathLength(List<Node> nodesList, List<Edge> edgesList, Graph graph)
+            {
+                // Step 1: Initialize the sum of shortest path lengths and the counter of shortest paths
+                double sumPathLengths = 0.0;
+                int pathCount = 0;
+
+                // Step 2: Iterate over all pairs of nodes
+                foreach (var startNode in nodesList)
+                {
+                    // Use BFS to find the shortest paths from the start node
+                    Dictionary<Node, int> shortestPaths = BFSShortestPaths(startNode, nodesList, edgesList);
+
+                    // Iterate over all other nodes
+                    foreach (var endNode in nodesList)
+                    {
+                        // Skip the same node
+                        if (startNode == endNode)
+                        {
+                            continue;
+                        }
+
+                        // Get the shortest path length from the dictionary
+                        int pathLength = shortestPaths[endNode];
+
+                        // If the path length is not infinite, add it to the sum
+                        if (pathLength != int.MaxValue)
+                        {
+                            sumPathLengths += pathLength;
+                            pathCount++;
+                        }
+                    }
+                }
+
+                // Step 3: Calculate the average path length
+                double averagePathLength = sumPathLengths / pathCount;
+
+                // Step 4: Assign the average path length to the graph
+                graph.averagePathLength = averagePathLength;
+            }
+
+            public static void CalculateAssortivityCoefficient(List<Node> nodesList, List<Edge> edgesList, Graph graph)
+            {
+                // Step 1: Initialize the variables
+                double sumDegreeProduct = 0.0;
+                double sumSquaredDegreeSum = 0.0;
+                double sumDegreeSum = 0.0;
+
+                // Step 2: Calculate the sums
+                foreach (var edge in edgesList)
+                {
+                    sumDegreeProduct += edge.start.degree * edge.end.degree;
+                    sumSquaredDegreeSum += Math.Pow(edge.start.degree, 2) + Math.Pow(edge.end.degree, 2);
+                    sumDegreeSum += edge.start.degree + edge.end.degree;
+                }
+
+                // Step 3: Calculate the assortativity coefficient according to the formula of Newman
+                double assortativityCoefficient = (sumDegreeProduct / edgesList.Count - Math.Pow(sumDegreeSum / (2 * edgesList.Count), 2)) /
+                                                  (sumSquaredDegreeSum / (2 * edgesList.Count) - Math.Pow(sumDegreeSum / (2 * edgesList.Count), 2));
+
+                // Step 4: Assign the assortativity coefficient to the graph
+                graph.assortivityCoefficient = assortativityCoefficient;
+            }
 
         }
     }

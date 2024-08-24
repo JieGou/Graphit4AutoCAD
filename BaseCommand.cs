@@ -96,6 +96,9 @@ namespace Graphit
         public double diameter { get; set; }
         public Dictionary<int, int> kernelDegree { get; set; }
         public Dictionary<int, double> kernelDegreeDistribution { get; set; }
+        public int connectedComponents { get; set; }
+        public double averagePathLength { get; set; }
+        public double assortivityCoefficient { get; set; }
     }
 
 }
