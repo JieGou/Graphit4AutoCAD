@@ -99,6 +99,8 @@ namespace Graphit
         public int connectedComponents { get; set; }
         public double averagePathLength { get; set; }
         public double assortivityCoefficient { get; set; }
+        public double transitivity { get; set; }
+        public double spectralRadius { get; set; }
     }
 
 }

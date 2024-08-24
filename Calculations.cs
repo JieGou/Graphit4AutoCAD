@@ -7,6 +7,8 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
+using MathNet.Numerics.LinearAlgebra; // → CalculateSpectralRadius
+
 namespace Graphit
 {
     internal class Calculations
@@ -558,6 +560,78 @@ namespace Graphit
                 graph.assortivityCoefficient = assortativityCoefficient;
             }
 
+            public static void CalculateTransitivity(List<Node> nodesList, List<Edge> edgesList, Graph graph)
+            {
+                // Step 1: Initialize the variables
+                int triangles = 0;
+                int triplets = 0;
+
+                // Step 2: Calculate the number of triangles and triplets
+                foreach (var node in nodesList)
+                {
+                    // Get the neighbors of the node
+                    List<Node> neighbors = edgesList.Where(e => e.start == node || e.end == node)
+                        .Select(e => e.start == node ? e.end : e.start).ToList();
+
+                    // Count the number of triangles and triplets
+                    for (int i = 0; i < neighbors.Count; i++)
+                    {
+                        for (int j = i + 1; j < neighbors.Count; j++)
+                        {
+                            if (edgesList.Any(e => (e.start == neighbors[i] && e.end == neighbors[j]) ||
+                                                                               (e.start == neighbors[j] && e.end == neighbors[i])))
+                            {
+                                triangles++;
+                            }
+                            triplets++;
+                        }
+                    }
+                }
+
+                // Step 3: Calculate the transitivity
+                double transitivity = 0.0;
+
+                if (triplets > 0)
+                {
+                    transitivity = 3.0 * triangles / triplets;
+                }
+
+                // Step 4: Assign the transitivity to the graph
+                graph.transitivity = transitivity;
+            }
+        
+            public static void CalculateSpectralRadius(List<Node> nodesList, List<Edge> edgesList, Graph graph )
+            {
+                // Step 1: Initialize variables
+                int n = nodesList.Count;
+                Matrix<double> adjacencyMatrix = Matrix<double>.Build.Dense(n, n);
+                Dictionary<Node, int> nodeIndexDict = new Dictionary<Node, int>();
+
+                // Step 2: Construct the "nodeIndexDict" dictioanry
+                for (int i = 0; i<n; i++)
+                {
+                    nodeIndexDict[nodesList[i]] = i;
+                }
+
+                // Step 3: Construct the adjacency matrix (for an undirected graph)
+                foreach (var edge in edgesList)
+                {
+                    int i = nodeIndexDict[edge.start];
+                    int j = nodeIndexDict[edge.end];
+
+                    adjacencyMatrix[i, j] = 1;
+                    adjacencyMatrix[j, i] = 1;
+                }
+
+                // Step 4: Calculate the eigenvalues of the adjacency matrix
+                var eigenvalues = adjacencyMatrix.Evd().EigenValues;
+
+                // Step 5: Find the largest eigenvalue (which is spectral radius)
+                double spectralRadius = eigenvalues.Real().Max();
+
+                // Step 6: Assign the spectral radius to the graph
+                graph.spectralRadius = spectralRadius;
+            }
         }
     }
 }
