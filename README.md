@@ -1,5 +1,5 @@
 # Graphit for AutoCAD
-## Description
+## Overview
 
 The AutoCAD to Graph Data Extraction Tool is a utility designed to convert AutoCAD drawings into structured graph representations, provides knowledge representation by preserving the spatial and relational information inherent in the original vector data. Aiming to facilitate advanced processing and analysis using Graph Neural Networks (GNNs).  
 
@@ -18,3 +18,19 @@ The AutoCAD to Graph Data Extraction Tool is a utility designed to convert AutoC
 * __Graph Neural Networks (GNNs):__ Prepare AutoCAD drawing data for advanced machine learning tasks using GNNs.
 * __Object Recognition:__ Enable object recognition and classification tasks by converting geometric entities into structured graph data.
 * __Data Analysis:__ Facilitate spatial and relational analysis of drawing data in a graph-based framework.
+
+## Installation
+
+**1- Clone or Download the Repository:**
+```ruby
+git clone https://github.com/janusquadrifrons/Graphit4AutoCAD
+```
+**2- Build the Project:** Open the solution file in your preferred IDE and build the project. Make sure you have all dependencies installed, including ML.NET and the necessary AutoCAD libraries.
+
+**3- Load the Plug-in in AutoCAD:** Type the NETLOAD command in AutoCAD to load the plug-in within an active session.
+
+## Usage with Commands
+
+#### EXTRACTTOGRAPH      
+-Function       : Extracts relevant data from the current drawing and saves it as a .json file.\
+-Purpose        : The file can be used to train the model.
