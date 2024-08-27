@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using MathNet.Numerics.LinearAlgebra; // → CalculateSpectralRadius
+using MathNet.Numerics.LinearAlgebra.Double; 
 
 namespace Graphit
 {
@@ -631,6 +632,141 @@ namespace Graphit
 
                 // Step 6: Assign the spectral radius to the graph
                 graph.spectralRadius = spectralRadius;
+            }
+        
+            public static void CalculateAlgebraicConnectivity(List<Node> nodesList, List<Edge> edgesList, Graph graph)
+            {
+                // Step 1: Initialize variables
+                int n = nodesList.Count;
+                Matrix<double> laplacianMatrix = Matrix<double>.Build.Dense(n, n);
+                Dictionary<Node, int> nodeIndexDict = new Dictionary<Node, int>();
+
+                // Step 2: Construct the "nodeIndexDict" dictionary
+                for (int i = 0; i < n; i++)
+                {
+                    nodeIndexDict[nodesList[i]] = i;
+                }
+
+                // Step 3: Construct the Laplacian matrix
+                foreach (var edge in edgesList)
+                {
+                    int i = nodeIndexDict[edge.start];
+                    int j = nodeIndexDict[edge.end];
+
+                    laplacianMatrix[i, j] = -1;
+                    laplacianMatrix[j, i] = -1;
+                    laplacianMatrix[i, i] += 1;
+                    laplacianMatrix[j, j] += 1;
+                }
+
+                // Step 4: Calculate the eigenvalues of the Laplacian matrix
+                var eigenvalues = laplacianMatrix.Evd().EigenValues;
+
+                // Step 5: Find the second smallest eigenvalue (which is algebraic connectivity)
+                double[] realEigenvalues = eigenvalues.Real().ToArray();
+                Array.Sort(realEigenvalues);
+                double algebraicConnectivity = realEigenvalues[1];
+
+                // Step 6: Assign the algebraic connectivity to the graph
+                graph.algebraicConnectivity = algebraicConnectivity;
+            }
+
+            public static void CalculateEigenvalueDistribution(List<Node> nodesList, List<Edge> edgesList, Graph graph)
+            {
+                int n = nodesList.Count;
+
+                // Step 1: Create the adjacency matrix
+                Matrix<double> adjacencyMatrix = Matrix<double>.Build.Dense(n, n);
+                Dictionary<Node, int> nodeIndex = new Dictionary<Node, int>();
+
+                // Step 2: Construct the adjacency matrix
+                for (int i = 0; i < n; i++)
+                {
+                    nodeIndex[nodesList[i]] = i;
+                }
+
+                foreach (var edge in edgesList)
+                {
+                    int i = nodeIndex[edge.start];
+                    int j = nodeIndex[edge.end];
+
+                    adjacencyMatrix[i, j] = 1;
+                    adjacencyMatrix[j, i] = 1;
+                }
+
+                // Step 3: Calculate the eigenvalues of the adjacency matrix
+                var eigenvalues = adjacencyMatrix.Evd().EigenValues;
+
+                // Step 4: Convert the eigenvalues to a dictionary
+                Dictionary<double, int> eigenvalueDistribution = new Dictionary<double, int>();
+
+                // Step 5: Count the number of eigenvalues in each bin
+                foreach (var eigenvalue in eigenvalues.Real())
+                {
+                    double bin = Math.Round(eigenvalue, 2);
+
+                    if (eigenvalueDistribution.ContainsKey(bin))
+                    {
+                        eigenvalueDistribution[bin]++;
+                    }
+                    else
+                    {
+                        eigenvalueDistribution[bin] = 1;
+                    }
+                }
+
+                // Step 6: Assign the eigenvalue distribution to the graph
+                graph.eigenvalueDistribution = eigenvalueDistribution;
+            }
+        
+            public static void CalculateModularity(List<Node> nodesList, List<Edge> edgesList, Graph graph)
+            {
+                int n = nodesList.Count;
+                int m = edgesList.Count;
+
+                // Step 1: Calculate the total degree of the graph
+                double totalDegree = nodesList.Sum(nod => nod.degree);
+
+                // Step 2: Calculate the modularity matrix
+                Matrix<double> modularityMatrix = Matrix<double>.Build.Dense(n, n);
+
+                foreach (var edge in edgesList)
+                {
+                    int i = nodesList.IndexOf(edge.start);
+                    int j = nodesList.IndexOf(edge.end);
+
+                    modularityMatrix[i, j] = 1;
+                    modularityMatrix[j, i] = 1;
+                }
+
+                // Step 3: Calculate the modularity
+                double modularity = 0.0;
+
+                for (int i = 0; i < n; i++)
+                {
+                    for (int j = 0; j < n; j++)
+                    {
+                        double ki = nodesList[i].degree;
+                        double kj = nodesList[j].degree;
+
+                        modularityMatrix[i, j] -= (ki * kj) / (2 * m);
+                    }
+                }
+
+                // Step 4: Calculate the eigenvalues of the modularity matrix
+                var eigenvalues = modularityMatrix.Evd().EigenValues;
+
+                // Step 5: Calculate the modularity
+                foreach (var eigenvalue in eigenvalues.Real())
+                {
+                    modularity += eigenvalue;
+                }
+
+                // Step 6: Normalize the modularity
+                modularity /= (2 * m);
+
+                // Step 7: Assign the modularity to the graph
+                graph.modularity = modularity;
             }
         }
     }

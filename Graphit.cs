@@ -103,6 +103,9 @@ namespace Graphit
                     GraphLevelCalculations.CalculateAssortivityCoefficient(nodesList, edgesList, graph);
                     GraphLevelCalculations.CalculateTransitivity(nodesList, edgesList, graph);
                     GraphLevelCalculations.CalculateSpectralRadius(nodesList, edgesList, graph);
+                    GraphLevelCalculations.CalculateAlgebraicConnectivity(nodesList, edgesList, graph);
+                    GraphLevelCalculations.CalculateEigenvalueDistribution(nodesList, edgesList, graph);
+                    GraphLevelCalculations.CalculateModularity(nodesList, edgesList, graph);
 
                     // debugging
                     ed.WriteMessage("\n5-Serializing graph object...");

@@ -101,6 +101,9 @@ namespace Graphit
         public double assortivityCoefficient { get; set; }
         public double transitivity { get; set; }
         public double spectralRadius { get; set; }
+        public double algebraicConnectivity { get; set; }
+        public Dictionary<double, int> eigenvalueDistribution { get; set; }
+        public  double modularity { get; set; }
     }
 
 }
