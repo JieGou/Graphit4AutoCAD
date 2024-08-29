@@ -739,7 +739,7 @@ namespace Graphit
                     modularityMatrix[j, i] = 1;
                 }
 
-                // Step 3: Calculate the modularity
+                // Step 3: Filling modularity matrix with community detection (by Louvian Method)
                 double modularity = 0.0;
 
                 for (int i = 0; i < n; i++)
@@ -768,6 +768,26 @@ namespace Graphit
                 // Step 7: Assign the modularity to the graph
                 graph.modularity = modularity;
             }
+        
+            public static void CalculateEntropyOfDegreeDistribution(List<Node> nodesList, Graph graph)
+            {
+                // Step 1: Calculate the degree distribution via using graph.kernelDegree parameter
+                Dictionary<int, int> degreeDistribution = graph.kernelDegree;
+
+                // Step 2: Calculate the entropy of the degree distribution
+                double entropy = 0.0;
+                double totalNodes = nodesList.Count;
+
+                foreach (var key in degreeDistribution.Keys)
+                {
+                    double probability = degreeDistribution[key] / totalNodes;
+                    entropy -= probability * Math.Log(probability, 2); // --- Log base 2
+                }
+
+                // Step 3: Assign the entropy to the graph
+                graph.entropyOfDegreeDistribution = entropy;
+            }
+        
         }
     }
 }

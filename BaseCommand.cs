@@ -104,6 +104,7 @@ namespace Graphit
         public double algebraicConnectivity { get; set; }
         public Dictionary<double, int> eigenvalueDistribution { get; set; }
         public  double modularity { get; set; }
+        public double entropyOfDegreeDistribution { get; set; }
     }
 
 }
