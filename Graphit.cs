@@ -1,9 +1,10 @@
 ﻿// AutoCad to graph conversion tool
+// Extracts Autocad objects to a graph database and calculates graph and node level statistics
+// Serializes the graph object to JSON and writes it to a file
 
 using Autodesk.AutoCAD.Runtime; 
-using Autodesk.AutoCAD.ApplicationServices; 
+// using Autodesk.AutoCAD.ApplicationServices; 
 using Autodesk.AutoCAD.DatabaseServices; 
-using Autodesk.AutoCAD.EditorInput; 
 using Autodesk.AutoCAD.Geometry;
 
 using Newtonsoft.Json;
@@ -13,7 +14,6 @@ using System.IO;
 using System.Linq;
 
 using static Graphit.Calculations;
-using System.Diagnostics;
 
 namespace Graphit
 {
@@ -85,7 +85,7 @@ namespace Graphit
                     NodeLevelCalculations.CalculateBetweennessCentrality(nodesList, edgesList);
                     NodeLevelCalculations.CalculateClosenessCentrality(nodesList, edgesList);
                     NodeLevelCalculations.CalculateClusteringCoefficient(nodesList, edgesList);
-                    
+                    NodeLevelCalculations.CalculatePageRank(nodesList, edgesList);
 
                     // debugging
                     ed.WriteMessage("\n4-Graph creation...");
@@ -107,6 +107,7 @@ namespace Graphit
                     GraphLevelCalculations.CalculateEigenvalueDistribution(nodesList, edgesList, graph);
                     GraphLevelCalculations.CalculateModularity(nodesList, edgesList, graph);
                     GraphLevelCalculations.CalculateEntropyOfDegreeDistribution(nodesList, graph);
+                    GraphLevelCalculations.CalculateNodeConnectivityAlternative(nodesList, edgesList, graph);
 
                     // debugging
                     ed.WriteMessage("\n5-Serializing graph object...");

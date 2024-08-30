@@ -1,14 +1,12 @@
-﻿using Newtonsoft.Json.Bson;
-using System;
-using System.CodeDom;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Threading.Tasks;
+
+using Autodesk.AutoCAD.EditorInput;
+using Autodesk.AutoCAD.ApplicationServices;
 
 using MathNet.Numerics.LinearAlgebra; // → CalculateSpectralRadius
-using MathNet.Numerics.LinearAlgebra.Double; 
+using MathNet.Numerics.LinearAlgebra.Solvers;
 
 namespace Graphit
 {
@@ -26,13 +24,14 @@ namespace Graphit
             
             public static void CalculateNodeEigenvectorCentrality(List<Node> nodesList, List<Edge> edgesList)
             {
-                // Initialize centrality score dictionary
+                // Step 1: Initialize centrality score dictionary
                 Dictionary<Node, double> centralitiesDict = nodesList.ToDictionary(nd => nd, nd => 1.0);
 
                 double tolerance = 1e-6;
                 double dampingFactor = 0.85; // --- Google'nod PageRank damping factor : typically betw. 0.85-0.95
                 bool converged = false;
 
+                // Step 2: Iteratively update the centralities
                 while (!converged)
                 {
                     // Temporary centralitiesDict for this iteration
@@ -52,7 +51,7 @@ namespace Graphit
                             { sum += centralitiesDict[edge.start]; }
                         }
 
-                        //tempCentralities[nod] = sum; // --- Freeze/Infinitive loop without Damp.Factor
+                        //tempCentralities[nod] = rankSum; // --- Freeze/Infinitive loop without Damp.Factor
                         tempCentralities[node] = dampingFactor * sum + (1 - dampingFactor);
                     }
 
@@ -79,7 +78,7 @@ namespace Graphit
                     centralitiesDict = tempCentralities;
                 }
 
-                // Assign the final centralitiesDict to the nodes
+                // Step 4: Assign the final centralitiesDict to the nodes
                 foreach (var node in nodesList)
                 {
                     node.centralityEigenvector = centralitiesDict[node] * 100;
@@ -187,10 +186,10 @@ namespace Graphit
                     {
                         Node v = queue.Dequeue(); // --- Dequeue the first nod in the queue
 
-                        // For each neighbor of nod n
+                        // For each neighbor of nod node
                         foreach (var edg in edgesList)
                         {
-                            Node w = null; // --- Neighbor of nod n
+                            Node w = null; // --- Neighbor of nod node
                             if (edg.start == v)
                             {
                                 w = edg.end;
@@ -273,8 +272,76 @@ namespace Graphit
                     node.clusteringCoefficient = (2.0 * triangleCount) / (degree * (degree - 1));
                 }
             }
-        }
 
+            public static void CalculatePageRank(List<Node> nodesList, List<Edge> edgesList)
+            {
+                int n = nodesList.Count;
+
+                Dictionary<Node, double> pageRankDict = nodesList.ToDictionary(node => node, node => 1.0 / n); // --- Initial PageRank values
+                Dictionary<Node, List<Node>> incomingLinksDict = new Dictionary<Node, List<Node>>(); // --- Incoming links for each node
+                Dictionary<Node, int> outgoingLinksCountDict = new Dictionary<Node, int>(); // --- Number of outgoing links for each node
+
+                // Step 1: Initialize the incoming and outgoing links data structures
+                foreach (var node in nodesList)
+                {
+                    incomingLinksDict[node] = new List<Node>();
+                    outgoingLinksCountDict[node] = 0;
+                }
+
+                // Step 2: Populate the incoming links and outgoing links count
+                foreach (var edge in edgesList)
+                {
+                    incomingLinksDict[edge.end].Add(edge.start); // --- Add the start node as an incoming link to the end node
+                    outgoingLinksCountDict[edge.start]++;
+                }
+
+                // Step 3: Perform the PageRank iterations
+                double dampingFactor = 0.85;
+                double tolerance = 1e-6;
+                bool converged = false;
+
+                while (!converged)
+                {
+                    Dictionary<Node, double> newPageRankDict = new Dictionary<Node, double>();
+
+                    // Calculate the new PageRank values
+                    foreach (var node in nodesList)
+                    {
+                        double rankSum = 0.0;
+
+                        foreach (var incomingNode in incomingLinksDict[node])
+                        {
+                            rankSum += pageRankDict[incomingNode] / outgoingLinksCountDict[incomingNode];
+                        }
+
+                        newPageRankDict[node] = (1 - dampingFactor) / n + dampingFactor * rankSum;
+                    }
+
+                    // Check for convergence
+                    converged = true;
+
+                    foreach (var node in nodesList)
+                    {
+                        if (Math.Abs(newPageRankDict[node] - pageRankDict[node]) > tolerance)
+                        {
+                            converged = false;
+                            break;
+                        }
+                    }
+
+                    // Update the PageRank values
+                    pageRankDict = newPageRankDict;
+                }
+
+                // Step 4: Assign Page Rank values to nodes in nodesList
+                foreach (Node node in nodesList)
+                {
+                    // Check the pageRankDict for that node
+                    node.pageRank = pageRankDict[node] * 100;
+                }
+            }
+        }
+         
         public class GraphLevelCalculations
         {
             public static void CalculateAverageDegree(List<Node> nodesList, List<Edge> edgesList, Graph graph)
@@ -336,7 +403,7 @@ namespace Graphit
                 graph.diameter = diameter;
             }
 
-            // Helper method → Calculate Graph Diameter
+            // Helper method → CalculateGraphDiameter & CalculateNodeConnectivity & CalculateAveragePathLength
             private static Dictionary<Node, int> BFSShortestPaths(Node startNode, List<Node> nodesList, List<Edge> edgesList)
             {
                 // Initialize the distance dictionary
@@ -500,7 +567,7 @@ namespace Graphit
         
             public static void CalculateAveragePathLength(List<Node> nodesList, List<Edge> edgesList, Graph graph)
             {
-                // Step 1: Initialize the sum of shortest path lengths and the counter of shortest paths
+                // Step 1: Initialize the rankSum of shortest path lengths and the counter of shortest paths
                 double sumPathLengths = 0.0;
                 int pathCount = 0;
 
@@ -522,7 +589,7 @@ namespace Graphit
                         // Get the shortest path length from the dictionary
                         int pathLength = shortestPaths[endNode];
 
-                        // If the path length is not infinite, add it to the sum
+                        // If the path length is not infinite, add it to the rankSum
                         if (pathLength != int.MaxValue)
                         {
                             sumPathLengths += pathLength;
@@ -787,7 +854,179 @@ namespace Graphit
                 // Step 3: Assign the entropy to the graph
                 graph.entropyOfDegreeDistribution = entropy;
             }
-        
+
+            // The Autocad Application returned an error like tihs "Error: The given key was not present in the dictionary."
+            // Why is that and how to fix?
+            // Answer : The error occurs when the key is not found in the dictionary.
+            // So which line should I correct?
+            // Answer : You should correct the line where the error occurs.
+            // So which line the error occurs, possibly?
+            // Answer : The error occurs in the line where the key is not found in the dictionary. It is line number 3 in the CalculateNodeConnectivity method.
+            public static void CalculateNodeConnectivity(List<Node> nodesList, List<Edge> edgesList, Graph graph)
+            {
+                // Step 1: Initialize the node connectivity
+                int nodeConnectivity = int.MaxValue; // --- Maximum value of int
+
+                // Step 2: Iterate over all pairs of nodes
+                foreach (var startNode in nodesList)
+                {
+                    foreach (var endNode in nodesList)
+                    {
+                        // Skip the same node
+                        if (startNode == endNode)
+                        {
+                            continue;
+                        }
+
+                        // Use BFS to find the shortest paths from the start node
+                        Dictionary<Node, int> originalShortestPaths = BFSShortestPaths(startNode, nodesList, edgesList);
+
+                        // If the end node is reachable from the start node
+                        if (originalShortestPaths[endNode] != int.MaxValue)
+                        {
+                            // Remove the start node and end node from the graph
+                            List<Node> nodesToRemove = nodesList.Where(n => n != startNode && n != endNode).ToList();
+                            int currentConnectivity = 0;
+
+                            foreach (var nodeToRemove in nodesToRemove)
+                            {
+                                List<Node> reducedNodes = nodesList.Where(n => n != nodeToRemove).ToList();
+                                List<Edge> reducedEdges = edgesList.Where(e => e.start != nodeToRemove && e.end != nodeToRemove).ToList();
+                            
+                                Dictionary<Node, int> reducedShortestPaths = BFSShortestPaths(startNode, reducedNodes, reducedEdges);
+
+                                if (reducedShortestPaths[endNode] == int.MaxValue)
+                                {
+                                    break;
+                                }
+
+                                currentConnectivity++;
+                            }
+
+                            nodeConnectivity = Math.Min(nodeConnectivity, currentConnectivity);
+                        }
+                    }
+                }
+
+                // Step 3: Assign the node connectivity to the graph
+                graph.nodeConnectivity = nodeConnectivity;
+            }
+
+            //////////////////////////////////////////////////////////////////////////////////////////
+
+            public static void CalculateNodeConnectivityAlternative(List<Node> nodesList, List<Edge> edgesList, Graph graph)
+            {
+                int nodeConnectivity = int.MaxValue;
+
+                for (int i = 0; i < nodesList.Count; i++)
+                {
+                    for (int j = i + 1; j < nodesList.Count; j++)
+                    {
+                        Node source = nodesList[i];
+                        Node sink = nodesList[j];
+
+                        int maxFlow = FordFulkerson(nodesList, edgesList, source, sink);
+                        nodeConnectivity = Math.Min(nodeConnectivity, maxFlow);
+                    }
+                }
+
+
+                graph.nodeConnectivity = nodeConnectivity;
+            }
+
+            // Helper function → CalculateNodeConnectivityAlternative : FordFulkerson algorithm finds the maximum flow in a network
+            private static int FordFulkerson(List<Node> nodes, List<Edge> edges, Node source, Node sink)
+            {
+                Dictionary<Node, Dictionary<Node, int>> residualGraph = InitializeResidualGraph(nodes, edges);
+                int maxFlow = 0;
+
+                while (true)
+                {
+                    List<Node> path = FindAugmentingPath(residualGraph, source, sink);
+                    if (path == null) break;
+
+                    int pathFlow = int.MaxValue;
+                    for (int i = 0; i < path.Count - 1; i++)
+                    {
+                        pathFlow = Math.Min(pathFlow, residualGraph[path[i]][path[i + 1]]);
+                    }
+
+                    for (int i = 0; i < path.Count - 1; i++)
+                    {
+                        Node u = path[i], v = path[i + 1];
+                        residualGraph[u][v] -= pathFlow;
+                        residualGraph[v][u] += pathFlow;
+                    }
+
+                    maxFlow += pathFlow;
+                }
+
+                return maxFlow;
+            }
+
+            // Helper function → CalculateNodeConnectivityAlternative : Initialize the residual graph representation of the original graph
+            private static Dictionary<Node, Dictionary<Node, int>> InitializeResidualGraph(List<Node> nodes, List<Edge> edges)
+            {
+                var graph = new Dictionary<Node, Dictionary<Node, int>>();
+                foreach (var node in nodes)
+                {
+                    graph[node] = new Dictionary<Node, int>();
+                    foreach (var otherNode in nodes)
+                    {
+                        graph[node][otherNode] = 0;
+                    }
+                }
+
+                foreach (var edge in edges)
+                {
+                    graph[edge.start][edge.end] = 1;
+                    graph[edge.end][edge.start] = 1; // For undirected graph
+                }
+
+                return graph;
+            }
+            
+            // Helper function → CalculateNodeConnectivityAlternative : Find an augmenting path in the residual graph using BFS
+            private static List<Node> FindAugmentingPath(Dictionary<Node, Dictionary<Node, int>> graph, Node source, Node sink)
+            {
+                var queue = new Queue<Node>();
+                var visited = new HashSet<Node>();
+                var parent = new Dictionary<Node, Node>();
+
+                queue.Enqueue(source);
+                visited.Add(source);
+
+                while (queue.Count > 0)
+                {
+                    var current = queue.Dequeue();
+                    if (current == sink) break;
+
+                    foreach (var neighbor in graph[current].Keys)
+                    {
+                        if (!visited.Contains(neighbor) && graph[current][neighbor] > 0)
+                        {
+                            queue.Enqueue(neighbor);
+                            visited.Add(neighbor);
+                            parent[neighbor] = current;
+                        }
+                    }
+                }
+
+                if (!visited.Contains(sink)) return null;
+
+                var path = new List<Node>();
+                var node = sink;
+                while (node != source)
+                {
+                    path.Add(node);
+                    node = parent[node];
+                }
+                path.Add(source);
+                path.Reverse();
+                return path;
+            }
+
+            //////////////////////////////////////////////////////////////////////////////////////////
         }
     }
 }

@@ -42,7 +42,7 @@ namespace Graphit
         public double centralityBetweenness { get; set; }
         public double centralityCloseness { get; set; }
         public double clusteringCoefficient { get; set; }
-
+        public double pageRank { get; set; }
 
         public Node(Point3d pt, string type, string id, string label)
         {
@@ -105,6 +105,7 @@ namespace Graphit
         public Dictionary<double, int> eigenvalueDistribution { get; set; }
         public  double modularity { get; set; }
         public double entropyOfDegreeDistribution { get; set; }
+        public int nodeConnectivity { get; set; }
     }
 
 }
