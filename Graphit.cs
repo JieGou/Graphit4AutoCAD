@@ -86,6 +86,7 @@ namespace Graphit
                     NodeLevelCalculations.CalculateClosenessCentrality(nodesList, edgesList);
                     NodeLevelCalculations.CalculateClusteringCoefficient(nodesList, edgesList);
                     NodeLevelCalculations.CalculatePageRank(nodesList, edgesList);
+                    NodeLevelCalculations.CalculateEccentricity(nodesList, edgesList);
 
                     // debugging
                     ed.WriteMessage("\n4-Graph creation...");
@@ -107,7 +108,7 @@ namespace Graphit
                     GraphLevelCalculations.CalculateEigenvalueDistribution(nodesList, edgesList, graph);
                     GraphLevelCalculations.CalculateModularity(nodesList, edgesList, graph);
                     GraphLevelCalculations.CalculateEntropyOfDegreeDistribution(nodesList, graph);
-                    GraphLevelCalculations.CalculateNodeConnectivityAlternative(nodesList, edgesList, graph);
+                    GraphLevelCalculations.CalculateNodeConnectivity(nodesList, edgesList, graph);
 
                     // debugging
                     ed.WriteMessage("\n5-Serializing graph object...");

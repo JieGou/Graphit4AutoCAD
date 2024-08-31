@@ -43,6 +43,7 @@ namespace Graphit
         public double centralityCloseness { get; set; }
         public double clusteringCoefficient { get; set; }
         public double pageRank { get; set; }
+        public int eccentricity { get; set; }
 
         public Node(Point3d pt, string type, string id, string label)
         {

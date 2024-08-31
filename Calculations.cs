@@ -340,6 +340,21 @@ namespace Graphit
                     node.pageRank = pageRankDict[node] * 100;
                 }
             }
+        
+            public static void CalculateEccentricity(List<Node> nodesList, List<Edge> edgesList)
+            {
+                foreach (var node in nodesList)
+                {
+                    // Use BFS to find the shortest paths from the node
+                    Dictionary<Node, int> shortestPaths = GraphLevelCalculations.BFSShortestPaths(node, nodesList, edgesList);
+
+                    // Find the maximum distance from the node to any other node
+                    int maxDistance = shortestPaths.Values.Max();
+
+                    // Assign the eccentricity to the node
+                    node.eccentricity = maxDistance;
+                }
+            }
         }
          
         public class GraphLevelCalculations
@@ -404,7 +419,7 @@ namespace Graphit
             }
 
             // Helper method → CalculateGraphDiameter & CalculateNodeConnectivity & CalculateAveragePathLength
-            private static Dictionary<Node, int> BFSShortestPaths(Node startNode, List<Node> nodesList, List<Edge> edgesList)
+            public static Dictionary<Node, int> BFSShortestPaths(Node startNode, List<Node> nodesList, List<Edge> edgesList)
             {
                 // Initialize the distance dictionary
                 Dictionary<Node, int> distanceDict = nodesList.ToDictionary(n => n, n => int.MaxValue);
@@ -855,66 +870,9 @@ namespace Graphit
                 graph.entropyOfDegreeDistribution = entropy;
             }
 
-            // The Autocad Application returned an error like tihs "Error: The given key was not present in the dictionary."
-            // Why is that and how to fix?
-            // Answer : The error occurs when the key is not found in the dictionary.
-            // So which line should I correct?
-            // Answer : You should correct the line where the error occurs.
-            // So which line the error occurs, possibly?
-            // Answer : The error occurs in the line where the key is not found in the dictionary. It is line number 3 in the CalculateNodeConnectivity method.
-            public static void CalculateNodeConnectivity(List<Node> nodesList, List<Edge> edgesList, Graph graph)
-            {
-                // Step 1: Initialize the node connectivity
-                int nodeConnectivity = int.MaxValue; // --- Maximum value of int
-
-                // Step 2: Iterate over all pairs of nodes
-                foreach (var startNode in nodesList)
-                {
-                    foreach (var endNode in nodesList)
-                    {
-                        // Skip the same node
-                        if (startNode == endNode)
-                        {
-                            continue;
-                        }
-
-                        // Use BFS to find the shortest paths from the start node
-                        Dictionary<Node, int> originalShortestPaths = BFSShortestPaths(startNode, nodesList, edgesList);
-
-                        // If the end node is reachable from the start node
-                        if (originalShortestPaths[endNode] != int.MaxValue)
-                        {
-                            // Remove the start node and end node from the graph
-                            List<Node> nodesToRemove = nodesList.Where(n => n != startNode && n != endNode).ToList();
-                            int currentConnectivity = 0;
-
-                            foreach (var nodeToRemove in nodesToRemove)
-                            {
-                                List<Node> reducedNodes = nodesList.Where(n => n != nodeToRemove).ToList();
-                                List<Edge> reducedEdges = edgesList.Where(e => e.start != nodeToRemove && e.end != nodeToRemove).ToList();
-                            
-                                Dictionary<Node, int> reducedShortestPaths = BFSShortestPaths(startNode, reducedNodes, reducedEdges);
-
-                                if (reducedShortestPaths[endNode] == int.MaxValue)
-                                {
-                                    break;
-                                }
-
-                                currentConnectivity++;
-                            }
-
-                            nodeConnectivity = Math.Min(nodeConnectivity, currentConnectivity);
-                        }
-                    }
-                }
-
-                // Step 3: Assign the node connectivity to the graph
-                graph.nodeConnectivity = nodeConnectivity;
-            }
-
             //////////////////////////////////////////////////////////////////////////////////////////
 
-            public static void CalculateNodeConnectivityAlternative(List<Node> nodesList, List<Edge> edgesList, Graph graph)
+            public static void CalculateNodeConnectivity(List<Node> nodesList, List<Edge> edgesList, Graph graph)
             {
                 int nodeConnectivity = int.MaxValue;
 
@@ -934,7 +892,7 @@ namespace Graphit
                 graph.nodeConnectivity = nodeConnectivity;
             }
 
-            // Helper function → CalculateNodeConnectivityAlternative : FordFulkerson algorithm finds the maximum flow in a network
+            // Helper function → CalculateNodeConnectivity : FordFulkerson algorithm finds the maximum flow in a network
             private static int FordFulkerson(List<Node> nodes, List<Edge> edges, Node source, Node sink)
             {
                 Dictionary<Node, Dictionary<Node, int>> residualGraph = InitializeResidualGraph(nodes, edges);
@@ -964,7 +922,7 @@ namespace Graphit
                 return maxFlow;
             }
 
-            // Helper function → CalculateNodeConnectivityAlternative : Initialize the residual graph representation of the original graph
+            // Helper function → CalculateNodeConnectivity : Initialize the residual graph representation of the original graph
             private static Dictionary<Node, Dictionary<Node, int>> InitializeResidualGraph(List<Node> nodes, List<Edge> edges)
             {
                 var graph = new Dictionary<Node, Dictionary<Node, int>>();
@@ -986,7 +944,7 @@ namespace Graphit
                 return graph;
             }
             
-            // Helper function → CalculateNodeConnectivityAlternative : Find an augmenting path in the residual graph using BFS
+            // Helper function → CalculateNodeConnectivity : Find an augmenting path in the residual graph using BFS
             private static List<Node> FindAugmentingPath(Dictionary<Node, Dictionary<Node, int>> graph, Node source, Node sink)
             {
                 var queue = new Queue<Node>();
