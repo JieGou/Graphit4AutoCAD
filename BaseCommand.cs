@@ -76,6 +76,10 @@ namespace Graphit
         public string label { get; set; } // --- connection, overlap
         public string type { get; set; }
 
+        // Derived metrics
+
+        public double edgeBetweennessCentrality { get; set; }
+
         public Edge(Node start, Node end, string type, string id, string label)
         {
             this.start = start;

@@ -88,6 +88,9 @@ namespace Graphit
                     NodeLevelCalculations.CalculatePageRank(nodesList, edgesList);
                     NodeLevelCalculations.CalculateEccentricity(nodesList, edgesList);
 
+                    // Calculate edge level statistics
+                    EdgeLevelCalculations.CalculateEdgeBetweennessCentrality(nodesList, edgesList);
+
                     // debugging
                     ed.WriteMessage("\n4-Graph creation...");
                     // Define the graph object
