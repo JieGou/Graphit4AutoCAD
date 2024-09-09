@@ -406,7 +406,7 @@ namespace Graphit
                             }
 
                             // Neighbor found for the first time?
-                            if (distance[neighbor] < 0)
+                            if (distance[neighbor] < 0)  
                             {
                                 queue.Enqueue(neighbor);
                                 distance[neighbor] = distance[sourceNode] + 1;
@@ -456,7 +456,99 @@ namespace Graphit
                     }
                 }
             }
+        
+            public static void DetectBridgeEdges(List<Node> nodesList, List<Edge> edgesList)
+            {
+                // Step 1: Initialize the bridge edge dictionary
+                Dictionary<Edge, bool> bridgeEdgesDict = edgesList.ToDictionary(edge => edge, edge => false);
 
+                // Step 2: Run the Brandes' algorithm for each node as the source
+                foreach (var node in nodesList)
+                {
+                    // Step 2.1: Initialize the variables
+                    Stack<Node> stack = new Stack<Node>(); // --- Stack of nodes in order of non-increasing distance from the source node
+                    Dictionary<Node, List<Node>> predecessors = nodesList.ToDictionary(v => v, v => new List<Node>()); // --- Predecessors in shortest paths from the source node
+                    Dictionary<Node, double> sigma = nodesList.ToDictionary(v => v, v => 0.0); // --- Number of shortest paths from the source node
+                    Dictionary<Node, double> distance = nodesList.ToDictionary(v => v, v => -1.0); // --- Distance from the source node
+
+                    sigma[node] = 1.0; // --- Number of shortest paths from the source node to itself
+                    distance[node] = 0.0; // --- Distance from the source node to itself
+
+                    Queue<Node> queue = new Queue<Node>(); // --- Queue of nodes in order of increasing distance from the source node
+                    queue.Enqueue(node);
+
+                    // Step 2.2: BFS to find the shortest paths
+                    while (queue.Count > 0)
+                    {
+                        Node sourceNode = queue.Dequeue(); // --- Dequeue the first node in the queue
+                        stack.Push(sourceNode); // --- Push the source node onto the stack
+
+                        // For each neighbor of the source node
+                        foreach (var edge in edgesList)
+                        {
+                            Node neighbor = null; // --- Neighbor of the source node
+
+                            // Find the neighbor of the source node
+                            if (edge.start == sourceNode)
+                            {
+                                neighbor = edge.end;
+                            }
+                            else if (edge.end == sourceNode)
+                            {
+                                neighbor = edge.start;
+                            }
+
+                            if (neighbor == null)
+                            {
+                                continue;
+                            }
+
+                            // Neighbor found for the first time?
+                            if (distance[neighbor] < 0)
+                            {
+                                queue.Enqueue(neighbor);
+                                distance[neighbor] = distance[sourceNode] + 1;
+                            }
+
+                            // Shortest path to the neighbor via the source node?
+                            if (distance[neighbor] == distance[sourceNode] + 1)
+                            {
+                                sigma[neighbor] += sigma[sourceNode];
+                                predecessors[neighbor].Add(sourceNode);
+                            }
+                        }
+                    }
+
+                    // Step 2.3: Accumulation
+                    Dictionary<Node, double> delta = nodesList.ToDictionary(v => v, v => 0.0); // --- Dependency of the source node on the first node
+
+                    while (stack.Count > 0)
+                    {
+                        Node w = stack.Pop(); // --- Pop the top node from the stack
+
+                        foreach (Node v in predecessors[w])
+                        {
+                            delta[v] += (sigma[v] / sigma[w]) * (1.0 + delta[w]); // --- Accumulate the dependency
+                        }
+
+                        if (w != node)
+                        {
+                            // Check if the edge is a bridge edge
+                            if (delta[w] == 0)
+                            {
+                                bridgeEdgesDict[edgesList.First(e => (e.start == w && e.end == predecessors[w].First()) ||
+                                                                                                      (e.end == w && e.start == predecessors[w].First()))] = true;
+                            }
+                        }
+                    }
+
+                    // Step 3: Assign the bridge edges to the edges
+                    foreach (var edge in edgesList)
+                    {
+                        edge.bridgeEdge = bridgeEdgesDict[edge].ToString();
+                    }
+                }
+            }
         }
 
         public class GraphLevelCalculations

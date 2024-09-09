@@ -90,6 +90,7 @@ namespace Graphit
 
                     // Calculate edge level statistics
                     EdgeLevelCalculations.CalculateEdgeBetweennessCentrality(nodesList, edgesList);
+                    EdgeLevelCalculations.DetectBridgeEdges(nodesList, edgesList);
 
                     // debugging
                     ed.WriteMessage("\n4-Graph creation...");
