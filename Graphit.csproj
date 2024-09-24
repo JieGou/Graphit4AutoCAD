@@ -35,15 +35,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AcCoreMgd">
-      <HintPath>..\..\..\Autodesk_ObjectARX_2019_Win_64_and_32_Bit\inc\AcCoreMgd.dll</HintPath>
+      <HintPath>C:\ObjectARX 2022\inc\AcCoreMgd.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="AcDbMgd">
-      <HintPath>..\..\..\Autodesk_ObjectARX_2019_Win_64_and_32_Bit\inc\AcDbMgd.dll</HintPath>
+      <HintPath>C:\ObjectARX 2022\inc\AcDbMgd.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="AcMgd">
-      <HintPath>..\..\..\Autodesk_ObjectARX_2019_Win_64_and_32_Bit\inc\AcMgd.dll</HintPath>
+      <HintPath>C:\ObjectARX 2022\inc\AcMgd.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="MathNet.Numerics, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
